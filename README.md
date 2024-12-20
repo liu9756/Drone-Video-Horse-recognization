@@ -28,32 +28,14 @@ The system computes feature vectors for each horse, compares them across dataset
 
 ---
 ### Per-Second Cosine Similarity
-For each second of video, the average feature vector of the frames is calculated:
-
-\[
-F_{X_k}^t = \frac{1}{n_t} \sum_{i=1}^{n_t} f_{X_k}^{t,i}, \quad F_{Y_j}^t = \frac{1}{m_t} \sum_{j=1}^{m_t} f_{Y_j}^{t,j}
-\]
-
-where:
-- \( F_{X_k}^t \): Average feature vector for second \( t \) of horse \( X_k \).
-- \( F_{Y_j}^t \): Average feature vector for second \( t \) of horse \( Y_j \).
-- \( n_t, m_t \): Number of frames in second \( t \) for \( X_k \) and \( Y_j \), respectively.
-- \( f_{X_k}^{t,i}, f_{Y_j}^{t,j} \): Feature vector for the \( i \)-th frame of \( X_k \) and the \( j \)-th frame of \( Y_j \).
-
-The cosine similarity for second \( t \) is:
-
-\[
-S_t(X_k, Y_j) = \frac{F_{X_k}^t \cdot F_{Y_j}^t}{\|F_{X_k}^t\| \cdot \|F_{Y_j}^t\|}
-\]
+For each second of video, the average feature vector of the frames is calculated
 
 ### Overall Similarity
-The overall similarity between \( X_k \) and \( Y_j \) is the average cosine similarity across all seconds:
+The overall similarity between X_k  and Y_j is the average cosine similarity across all seconds:
 
-\[
-S(X_k, Y_j) = \frac{1}{T} \sum_{t=1}^T S_t(X_k, Y_j)
-\]
+![overall similarity](eq.png)
 
-where \( T \) is the total number of seconds compared.
+where T is the total number of seconds compared.
 
 ---
 ## Output
