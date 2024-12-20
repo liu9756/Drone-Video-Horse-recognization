@@ -87,12 +87,12 @@ A heatmap illustrating the similarity between horses in the training and testing
 
 ## Example Outputs
 ### Similarity Histogram
-![Similarity Histogram](similarity_histogram_horse_7.png)
+![Similarity Histogram](similarity_matrix_graph/10s_similarity_histogram_horse_1.png)
 
 This histogram highlights the best-matching horse in red, making it easy to identify which horse in the testing dataset most closely resembles a given horse from the training dataset.
 
 ### Confusion Matrix
-![Confusion Matrix](similarity_matrix_horse_7.png)
+![Confusion Matrix](confusion_matrix.png)
 
 The confusion matrix provides an overview of similarity scores between horses in the training and testing datasets, helping to evaluate the recognition performance.
 
