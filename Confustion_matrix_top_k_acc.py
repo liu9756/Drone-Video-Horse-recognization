@@ -8,6 +8,7 @@ from tqdm import tqdm
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+#from sklearn.metrics import top_k_accuracy_score
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 processor = AutoImageProcessor.from_pretrained('facebook/dinov2-base')
@@ -76,12 +77,19 @@ def compute_similarity_matrix(train_set_path, test_set_path):
     similarity_matrix = np.array(similarity_matrix)
     return similarity_matrix, train_horses, test_horses, train_stats, test_stats
 
-def compute_top_k_accuracy(similarity_matrix, k=1):
-    predicted_indices = np.argsort(-similarity_matrix, axis=1)[:, :k]
-    correct_predictions = sum([i in predicted_indices[i] for i in range(len(predicted_indices))])
-    return correct_predictions / len(similarity_matrix)
+def calculate_top_k_accuracy(logits, targets, k=2):
+    values, indices = torch.topk(logits, k=k, sorted=True)
+    y = torch.reshape(targets, [-1, 1])
+    correct = (y == indices) * 1.  # Compare predictions with ground truth
+    top_k_accuracy = torch.mean(correct) * k  # Calculate final accuracy
+    return top_k_accuracy
 
-def plot_confusion_matrix(similarity_matrix, train_horses, test_horses, output_path="confusion_matrix.png"):
+def compute_top_k_accuracy(similarity_matrix, k=1):
+    logits = torch.tensor(similarity_matrix)
+    targets = torch.arange(len(similarity_matrix))
+    return calculate_top_k_accuracy(logits, targets, k=k).item()
+
+def plot_confusion_matrix(similarity_matrix, train_horses, test_horses, output_path="confusion_matrix_2.png"):
     predicted_labels = np.argmax(similarity_matrix, axis=1)
     true_labels = range(len(train_horses))
 
@@ -105,12 +113,12 @@ test_set_path = "/home/liu.9756/Drone_video/Filtered_Video_30_60"
 
 similarity_matrix, train_horses, test_horses, train_stats, test_stats = compute_similarity_matrix(train_set_path, test_set_path)
 
-# Compute and display top-k accuracy
-for k in [1, 5]:
+# top-k accuracy
+for k in [1,3,5]:
     top_k_accuracy = compute_top_k_accuracy(similarity_matrix, k=k)
     print(f"Top-{k} Accuracy: {top_k_accuracy:.2%}")
 
-# Report frame and time statistics
+# Vidoe infomation after filtering
 print("\nTraining Set Statistics:")
 for horse, (frames, seconds) in train_stats.items():
     print(f"{horse}: {frames} frames, ~{seconds} seconds")
@@ -119,5 +127,4 @@ print("\nTesting Set Statistics:")
 for horse, (frames, seconds) in test_stats.items():
     print(f"{horse}: {frames} frames, ~{seconds} seconds")
 
-# Plot confusion matrix
 plot_confusion_matrix(similarity_matrix, train_horses, test_horses)
