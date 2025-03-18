@@ -104,8 +104,8 @@ def bipartite_match(sim_matrix):
 
 
 if __name__ == '__main__':
-    video_ref_path = '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0265/'   
-    video_comp_path = '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0268/'  
+    video_ref_path = '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0266/'   
+    video_comp_path = '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0269/'  
 
     print("Preprocessing reference...")
     processed_data_ref = data_preprocess(video_ref_path, fps=60)
@@ -147,7 +147,7 @@ if __name__ == '__main__':
             bipartite_results.append(match_info)
             print(f"  Ref: {ref_names[i]}  <-->  Comp: {comp_names[j]}, Score: {score:.4f}")
 
-        csv_filename = f"bipartite_match_{method}_0265_vs_0268.csv"
+        csv_filename = f"bipartite_match_{method}_0266_vs_0269.csv"
         with open(csv_filename, mode='w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(["Reference Horse", "Comparison Horse", "Score"])
@@ -155,6 +155,6 @@ if __name__ == '__main__':
                 writer.writerow([ref_horse, comp_horse, f"{score:.4f}"])
         print(f"Output csv file：{csv_filename}")
         title = f"Similarity Score Matrix ({method})"
-        save_path = f"similarity_{method}__0265_vs_0268.png"
+        save_path = f"similarity_{method}__0266_vs_0269.png"
         visualize_similarity(similarity_results[method], ref_names, comp_names, title, save_path)
         print(f"Saved '{method}' similarity heatmap：{save_path}")
