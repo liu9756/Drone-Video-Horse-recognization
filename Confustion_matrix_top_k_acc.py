@@ -51,14 +51,9 @@ def extract_horse_features_multiple_dirs(horse_dir_list, frames_per_second=60):
     
     for horse_dir in horse_dir_list:
         feats, frames, secs = extract_features_per_second(horse_dir, frames_per_second)
-        # feats 现在可能是 (N,1,768) 或 (N,768)，我们做一次 squeeze
-        feats = np.squeeze(feats)  # 默认把所有 size=1 的维度挤掉
-        # 如果 feats 原本是 (N, 768)， squeeze 后还是 (N, 768)；如果是 (N,1,768)，则变成 (N,768)
-        
-        # 如果只想要 2D 结构，可做一下判断:
+        feats = np.squeeze(feats)  
         if feats.ndim == 1:
-            # 说明只有一个秒级特征
-            feats = feats[np.newaxis, :]  # (1, 768)
+            feats = feats[np.newaxis, :] 
         
         all_features.append(feats)
         total_frames += frames
@@ -66,64 +61,45 @@ def extract_horse_features_multiple_dirs(horse_dir_list, frames_per_second=60):
     
     if len(all_features) == 0:
         return None, 0, 0
-    
-    # all_features 里每个元素现在是 (N_i, 768)，拼起来
-    all_features = np.concatenate(all_features, axis=0)  # (sum_N, 768)
-    # 对所有特征再做一次平均，得到 (768,)
-    final_feature = np.mean(all_features, axis=0)  # shape (768,)
-    # 再扩展成 (1,768) 以便后续 dot
-    final_feature = np.expand_dims(final_feature, axis=0)  # shape (1,768)
+    all_features = np.concatenate(all_features, axis=0) 
+    final_feature = np.mean(all_features, axis=0) 
+    final_feature = np.expand_dims(final_feature, axis=0)  
     
     return final_feature, total_frames, total_seconds
 
 
 def compute_similarity_matrix_multiple(train_folders_dict, test_folders_dict, frames_per_second=60):
-    """
-    train_folders_dict: { horse_name: [list_of_dirs_for_that_horse_in_train] }
-    test_folders_dict:  { horse_name: [list_of_dirs_for_that_horse_in_test] }
-    
-    返回:
-      similarity_matrix: (num_train_horses, num_test_horses)
-      train_horses: 训练马匹名字列表
-      test_horses: 测试马匹名字列表
-      train_stats: { horse_name: (frames, seconds) } (合并后的统计)
-      test_stats:  { horse_name: (frames, seconds) }
-    """
+
     train_horses = sorted(train_folders_dict.keys())
     test_horses = sorted(test_folders_dict.keys())
     
     similarity_matrix = []
     train_stats = {}
     test_stats = {}
-    
-    # 先把 test_horses 每个都提取好，后面在循环train时可直接使用
     test_features_dict = {}
     for test_horse in tqdm(test_horses, desc="Extracting Test Horses"):
         feature_vec, frames, secs = extract_horse_features_multiple_dirs(
             test_folders_dict[test_horse], frames_per_second
         )
-        test_features_dict[test_horse] = feature_vec  # (1, feature_dim)
+        test_features_dict[test_horse] = feature_vec  
         test_stats[test_horse] = (frames, secs)
     
-    # 逐个训练马匹
+
     for train_horse in tqdm(train_horses, desc="Processing Training Horses"):
         train_feature_vec, train_frames, train_secs = extract_horse_features_multiple_dirs(
             train_folders_dict[train_horse], frames_per_second
         )
         train_stats[train_horse] = (train_frames, train_secs)
         
-        # 与所有测试马匹做相似度
         row_sim = []
         for test_horse in test_horses:
             test_feature_vec = test_features_dict[test_horse]
             if train_feature_vec is None or test_feature_vec is None:
                 row_sim.append(0.0)
                 continue
-            
-            # 取 (1, feature_dim)，计算余弦相似度
             train_norm = train_feature_vec / np.linalg.norm(train_feature_vec, axis=1, keepdims=True)
             test_norm  = test_feature_vec  / np.linalg.norm(test_feature_vec, axis=1, keepdims=True)
-            similarity = np.dot(train_norm, test_norm.T).squeeze()  # scalar
+            similarity = np.dot(train_norm, test_norm.T).squeeze()  
             row_sim.append(similarity)
         
         similarity_matrix.append(row_sim)
@@ -134,7 +110,7 @@ def compute_similarity_matrix_multiple(train_folders_dict, test_folders_dict, fr
 def calculate_top_k_accuracy(logits, targets, k=2):
     values, indices = torch.topk(logits, k=k, sorted=True)
     y = torch.reshape(targets, [-1, 1])
-    correct = (y == indices) * 1.  # Compare predictions with ground truth
+    correct = (y == indices) * 1.  
     top_k_accuracy = torch.mean(correct) * k  # Calculate final accuracy
     return top_k_accuracy
 
@@ -163,22 +139,12 @@ def plot_confusion_matrix(similarity_matrix, train_horses, test_horses, output_p
     plt.show()
 
 def gather_horse_folders(video_dirs):
-    """
-    输入：多个视频文件夹的列表 video_dirs。
-    假设每个视频文件夹下都包含若干马匹子文件夹（horse1, horse2, ...）。
-    
-    输出：一个字典 horse_folders_dict
-        key：马匹名称 (str)
-        val：该马匹在所有video_dirs中对应的子文件夹路径列表 (List[str])
-    """
+
     horse_folders_dict = defaultdict(list)
     
     for video_dir in video_dirs:
-        # 这个video_dir应该是一个大的视频文件夹，比如 "/path/to/train_video1"
         if not os.path.isdir(video_dir):
             continue
-
-        # 获取该video_dir里所有的子文件夹(各个马匹)
         horses_in_dir = sorted(os.listdir(video_dir))
         for horse_name in horses_in_dir:
             sub_path = os.path.join(video_dir, horse_name)
@@ -199,11 +165,10 @@ test_paths = [
     "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0268_0_30/crop/"
 ] 
 
-# 2) 收集各匹马的子文件夹
+
 train_folders_dict = gather_horse_folders(train_paths)
 test_folders_dict  = gather_horse_folders(test_paths)
 
-# 3) 计算相似度矩阵
 similarity_matrix, train_horses, test_horses, train_stats, test_stats = compute_similarity_matrix_multiple(
     train_folders_dict, 
     test_folders_dict, 
