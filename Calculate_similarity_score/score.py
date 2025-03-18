@@ -87,7 +87,7 @@ def visualize_similarity(sim_matrix, ref_names, comp_names, title, save_path):
     plt.xticks(np.arange(len(comp_names)), comp_names, rotation=45)
     plt.yticks(np.arange(len(ref_names)), ref_names)
     plt.title(title)
-    
+
     for i in range(sim_matrix.shape[0]):
         for j in range(sim_matrix.shape[1]):
             plt.text(j, i, f"{sim_matrix[i, j]:.2f}",
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     ref_names = sorted(ref_horses.keys())
     comp_names = sorted(comp_horses.keys())
     
-    agg_methods = ['average', 'maximum', 'top20', 'weighted']
+    agg_methods = ['average', 'maximum', 'top20', 'weighted','top10','top30','top40','top20_weighted','top20_median','trimmed','geometric','p90']
     
     similarity_results = {method: np.zeros((len(ref_names), len(comp_names))) for method in agg_methods}
     
