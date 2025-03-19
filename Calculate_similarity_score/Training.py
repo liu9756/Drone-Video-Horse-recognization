@@ -6,6 +6,8 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from PIL import Image
 import numpy as np
+from utils import gather_data_from_videos,create_label_dict,get_confusion_matrix, get_classification_report
+from visualization import plot_confusion_matrix
 from transformers import AutoImageProcessor, AutoModel, Dinov2Config,Dinov2PreTrainedModel
 
 class VideoDataset(Dataset):
@@ -32,53 +34,16 @@ class VideoDataset(Dataset):
         return image, label
 
 
-def gather_data_from_videos(video_dirs):
-    """
-    video_dirs: [path_to_video1, path_to_video2, ...]
-    horse1, horse2, ...。
-    return: data_list = [(img_path, horse_name), ...]
-           horse_set = set([horse_name1, horse_name2, ...])
-    """
-    data_list = []
-    horse_set = set()
-
-    for vdir in video_dirs:
-        if not os.path.isdir(vdir):
-            continue
-        horses = sorted(os.listdir(vdir))
-        for hname in horses:
-            hpath = os.path.join(vdir, hname)
-            if not os.path.isdir(hpath):
-                continue
-            # horse hname
-            horse_set.add(hname)
-
-            # collect images
-            for fname in os.listdir(hpath):
-                if fname.lower().endswith(('.jpg', '.jpeg', '.png')):
-                    fpath = os.path.join(hpath, fname)
-                    data_list.append((fpath, hname))
-    return data_list, horse_set
-
-def create_label_dict(horses):
-    """
-    horses: iterable of horse_names (strings)
-    return: {horse_name: label_id}
-    """
-    horse_list = sorted(list(horses))
-    return { horse_name: idx for idx, horse_name in enumerate(horse_list) }
-
-
 
 train_dir_list = [
-    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0265/",
-    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0266/"
+    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0265/crop/",
+    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0266/crop/"
 ]
 
 test_dir_list = [
-    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0267/",
-    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0268/",
-    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0269/"
+    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0267/crop/",
+    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0268/crop/",
+    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0269/crop/"
 ] 
 
 train_data_list, train_horse_set = gather_data_from_videos(train_dir_list)
@@ -181,37 +146,8 @@ all_labels = np.array(all_labels)
 accuracy = (all_preds == all_labels).mean()
 print(f"Test Accuracy: {accuracy*100:.2f}%")
 
-
-from sklearn.metrics import confusion_matrix
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-
-cm = confusion_matrix(all_labels, all_preds) 
-print("Confusion Matrix:\n", cm)
-
-
+cm = get_confusion_matrix(all_labels, all_preds) 
 index_to_name = sorted(label_dict, key=lambda k: label_dict[k])
+plot_confusion_matrix(cm,index_to_name)
+report = get_classification_report(all_labels,all_preds,index_to_name,3)
 
-
-
-plt.figure(figsize=(8, 6))
-sns.heatmap(cm, annot=True, fmt="d") 
-plt.title("Confusion Matrix")
-plt.xlabel("Predicted Label")
-plt.ylabel("True Label")
-plt.xticks(ticks=np.arange(len(index_to_name))+0.5, labels=index_to_name, rotation=45)
-plt.yticks(ticks=np.arange(len(index_to_name))+0.5, labels=index_to_name, rotation=45)
-plt.tight_layout()
-plt.show()
-
-
-from sklearn.metrics import classification_report
-
-report = classification_report(
-    all_labels,
-    all_preds,
-    target_names=index_to_name,  
-    digits=3  
-)
-print(report)

@@ -3,6 +3,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 from data_preprocess import data_preprocess
 from scipy.optimize import linear_sum_assignment
+from utils import combine_video_features
 import csv
 
 def compute_similarity_matrix(ref_seq, comp_seq, sim_metric='euclidean'):
@@ -106,32 +107,36 @@ def bipartite_match(sim_matrix):
     return row_ind, col_ind
 
 
-if __name__ == '__main__':
-    video_ref_path = '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0268/'   
-    video_comp_path = '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0266/'  
+if __name__ == '__main__':  
+    ref_video_paths = [
+        '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0265/',
+        '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0266/'
+    ]
+    comp_video_paths = [
+        '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0268/'
+    ]
+    print("Preprocessing reference videos...")
+    combined_ref = combine_video_features(ref_video_paths, fps=60)
+    print("Preprocessing comparison videos...")
+    combined_comp = combine_video_features(comp_video_paths, fps=60)
 
-    print("Preprocessing reference...")
-    processed_data_ref = data_preprocess(video_ref_path, fps=60)
-    print("Preprocessing compare...")
-    processed_data_comp = data_preprocess(video_comp_path, fps=60)
+    #segment_ref = sorted(processed_data_ref.keys())[0]
+    #segment_comp = sorted(processed_data_comp.keys())[0]
 
-    segment_ref = sorted(processed_data_ref.keys())[0]
-    segment_comp = sorted(processed_data_comp.keys())[0]
-
-    ref_horses = processed_data_ref[segment_ref]
-    comp_horses = processed_data_comp[segment_comp]
+    ref_names = sorted(combined_ref.keys())
+    comp_names = sorted(combined_comp.keys())
     
-    ref_names = sorted(ref_horses.keys())
-    comp_names = sorted(comp_horses.keys())
+    #ref_names = sorted(ref_horses.keys())
+    #comp_names = sorted(comp_horses.keys())
     
     agg_methods = ['average', 'maximum', 'top20', 'weighted','top10','top30','top40','top20_weighted','top20_median','trimmed','geometric','p90']
     
     similarity_results = {method: np.zeros((len(ref_names), len(comp_names))) for method in agg_methods}
     
     for i, ref_horse in enumerate(ref_names):
-        ref_seq = ref_horses[ref_horse]  
+        ref_seq = combined_ref[ref_horse]  
         for j, comp_horse in enumerate(comp_names):
-            comp_seq = comp_horses[comp_horse]
+            comp_seq = combined_comp[comp_horse]
             sim_matrix = compute_similarity_matrix(ref_seq, comp_seq, sim_metric='euclidean')
             for method in agg_methods:
                 score = aggregate_matrix(sim_matrix, agg_method=method, weight_alpha=0.1)
@@ -150,7 +155,7 @@ if __name__ == '__main__':
             bipartite_results.append(match_info)
             print(f"  Ref: {ref_names[i]}  <-->  Comp: {comp_names[j]}, Score: {score:.4f}")
 
-        csv_filename = f"bipartite_match_{method}_0268_vs_0266.csv"
+        csv_filename = f"bipartite_match_{method}_0265_0266_vs_0268.csv"
         with open(csv_filename, mode='w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(["Reference Horse", "Comparison Horse", "Score"])
@@ -158,6 +163,6 @@ if __name__ == '__main__':
                 writer.writerow([ref_horse, comp_horse, f"{score:.4f}"])
         print(f"Output csv file：{csv_filename}")
         title = f"Similarity Score Matrix ({method})"
-        save_path = f"similarity_{method}__0268_vs_0266.png"
+        save_path = f"similarity_{method}__0265_0266_vs_0268.png"
         visualize_similarity(similarity_results[method], ref_names, comp_names, title, save_path)
         print(f"Saved '{method}' similarity heatmap：{save_path}")
