@@ -6,7 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from PIL import Image
 import numpy as np
-from transformers import AutoImageProcessor, AutoModel
+from transformers import AutoImageProcessor, AutoModel, Dinov2Config,Dinov2PreTrainedModel
 
 class VideoDataset(Dataset):
     def __init__(self, data_list, label_dict, transform=None):
@@ -71,15 +71,14 @@ def create_label_dict(horses):
 
 
 train_dir_list = [
-    "/home/liu.9756/Drone_video/DJI_0265_0_30_s/",
-    "/home/liu.9756/Drone_video/DJI_0265_30_60_s/",
-    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0266_60_120/crop/"
+    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0265/",
+    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0266/"
 ]
 
 test_dir_list = [
-    "/home/liu.9756/Drone_video/labeled_DJI_0267_0_60/crop/",
-    "/home/liu.9756/Drone_video/labeled_DJI_0267_120_180/crop/",
-    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0268_0_30/crop/"
+    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0267/",
+    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0268/",
+    "/home/liu.9756/Drone_video/labeled_Dataset_DJI_0269/"
 ] 
 
 train_data_list, train_horse_set = gather_data_from_videos(train_dir_list)

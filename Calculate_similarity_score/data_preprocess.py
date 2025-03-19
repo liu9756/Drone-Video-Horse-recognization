@@ -2,6 +2,7 @@ import os
 import numpy as np
 import torch
 import torch.nn.functional as F
+import torch.nn as nn
 from PIL import Image
 from transformers import AutoImageProcessor, AutoModel
 from data_loading import DataLoader

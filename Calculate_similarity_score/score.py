@@ -1,4 +1,5 @@
 import numpy as np
+import torch.nn as nn
 import matplotlib.pyplot as plt
 from data_preprocess import data_preprocess
 from scipy.optimize import linear_sum_assignment
@@ -14,7 +15,9 @@ def compute_similarity_matrix(ref_seq, comp_seq, sim_metric='euclidean'):
         diff = ref_seq[:, np.newaxis, :] - comp_seq[np.newaxis, :, :]
         dist = np.linalg.norm(diff, axis=2)
         sim_matrix = 1.0 / (1.0 + dist)
-
+    elif sim_metric == 'cosine':
+        sim_matrix = np.dot(ref_seq, comp_seq.T)
+        sim_matrix = (sim_matrix + 1) / 2
     return sim_matrix
 
 def aggregate_matrix(sim_matrix, agg_method='average', weight_alpha=0.1):
@@ -104,8 +107,8 @@ def bipartite_match(sim_matrix):
 
 
 if __name__ == '__main__':
-    video_ref_path = '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0266/'   
-    video_comp_path = '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0269/'  
+    video_ref_path = '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0268/'   
+    video_comp_path = '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0266/'  
 
     print("Preprocessing reference...")
     processed_data_ref = data_preprocess(video_ref_path, fps=60)
@@ -147,7 +150,7 @@ if __name__ == '__main__':
             bipartite_results.append(match_info)
             print(f"  Ref: {ref_names[i]}  <-->  Comp: {comp_names[j]}, Score: {score:.4f}")
 
-        csv_filename = f"bipartite_match_{method}_0266_vs_0269.csv"
+        csv_filename = f"bipartite_match_{method}_0268_vs_0266.csv"
         with open(csv_filename, mode='w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(["Reference Horse", "Comparison Horse", "Score"])
@@ -155,6 +158,6 @@ if __name__ == '__main__':
                 writer.writerow([ref_horse, comp_horse, f"{score:.4f}"])
         print(f"Output csv file：{csv_filename}")
         title = f"Similarity Score Matrix ({method})"
-        save_path = f"similarity_{method}__0266_vs_0269.png"
+        save_path = f"similarity_{method}__0268_vs_0266.png"
         visualize_similarity(similarity_results[method], ref_names, comp_names, title, save_path)
         print(f"Saved '{method}' similarity heatmap：{save_path}")
