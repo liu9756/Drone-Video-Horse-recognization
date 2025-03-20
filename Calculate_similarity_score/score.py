@@ -113,7 +113,8 @@ if __name__ == '__main__':
         '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0266/'
     ]
     comp_video_paths = [
-        '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0268/'
+        '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0268/',
+        '/home/liu.9756/Drone_video/labeled_Dataset_DJI_0269/'
     ]
     print("Preprocessing reference videos...")
     combined_ref = combine_video_features(ref_video_paths, fps=60)
