@@ -3,7 +3,7 @@ import os
 import numpy as np
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
-
+from data_loading import DataLoader
 def combine_video_features(video_paths, fps=60):
     combined = {}
     for path in video_paths:
@@ -16,32 +16,25 @@ def combine_video_features(video_paths, fps=60):
     return combined
 
 def gather_data_from_videos(video_dirs):
-    """
-    video_dirs: [path_to_video1, path_to_video2, ...]
-    horse1, horse2, ...。
-    return: data_list = [(img_path, horse_name), ...]
-           horse_set = set([horse_name1, horse_name2, ...])
-    """
     data_list = []
     horse_set = set()
 
     for vdir in video_dirs:
         if not os.path.isdir(vdir):
+            print(f"Warning: {vdir} does not exist, skipping.")
             continue
-        horses = sorted(os.listdir(vdir))
-        for hname in horses:
-            hpath = os.path.join(vdir, hname)
-            if not os.path.isdir(hpath):
-                continue
-            # horse hname
-            horse_set.add(hname)
 
-            # collect images
-            for fname in os.listdir(hpath):
-                if fname.lower().endswith(('.jpg', '.jpeg', '.png')):
-                    fpath = os.path.join(hpath, fname)
-                    data_list.append((fpath, hname))
+        loader = DataLoader(vdir)
+        data = loader.load_data()  
+
+        for seg, horses in data.items():
+            for horse, frames in horses.items():
+                horse_set.add(horse)  
+                for img_path in frames:
+                    data_list.append((img_path, horse))
+
     return data_list, horse_set
+
 
 def create_label_dict(horses):
     """
