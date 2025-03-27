@@ -67,7 +67,17 @@ def main(args):
                              std=[0.229, 0.224, 0.225])
     ])
 
-    train_dataset = VideoDataset(train_data_list, label_dict, transform=transform)
+    train_transform = transforms.Compose([
+        transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                            std=[0.229, 0.224, 0.225]),
+        transforms.RandomErasing(p=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3))
+    ])
+
+
+    train_dataset = VideoDataset(train_data_list, label_dict, transform=train_transform)
     test_dataset  = VideoDataset(test_data_list,  label_dict, transform=transform)
 
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
@@ -82,7 +92,11 @@ def main(args):
 
     feature_dim = 768 
     num_classes = len(label_dict)
-    classifier_head = nn.Linear(feature_dim, num_classes).to(device)
+    classifier_head = nn.Sequential(
+        nn.Linear(feature_dim, 512),
+        nn.ReLU(),
+        nn.Linear(512, num_classes)
+    ).to(device)
     class DinoClassifier(nn.Module):
         def __init__(self, dino_model, classifier):
             super().__init__()
@@ -93,13 +107,15 @@ def main(args):
             with torch.no_grad():
                 outputs = self.dino_model(x)
                 feats = outputs.last_hidden_state.mean(dim=1)
-            logits = self.classifier(feats)
+            intermediate = self.classifier[0](feats)       
+            activated = self.classifier[1](intermediate)     
+            logits = self.classifier[2](activated)
             return logits
 
     model = DinoClassifier(dino_model, classifier_head).to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(classifier_head.parameters(), lr=1e-3)
+    optimizer = optim.Adam(classifier_head.parameters(), lr=1e-4)
 
     num_epochs = args.num_epochs
     best_acc = 0.0
@@ -174,7 +190,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="DINOv2 Horse Classification Training")
-    parser.add_argument("--batch_size", type=int, default=16, help="Batch size for training and evaluation")
+    parser.add_argument("--batch_size", type=int, default=32, help="Batch size for training and evaluation")
     parser.add_argument("--num_epochs", type=int, default=10, help="Number of training epochs")
     args = parser.parse_args()
 

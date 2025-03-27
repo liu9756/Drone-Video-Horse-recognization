@@ -10,6 +10,7 @@ from data_loading import DataLoader
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 processor = None
 model = None
+middle_layer = None
 
 def init_dinov2():
     global processor, model
@@ -19,7 +20,13 @@ def init_dinov2():
     model.eval()
     model.to(device)
 
+
 init_dinov2()
+
+baseline_mapper = nn.Sequential(
+    nn.Linear(768, 512),
+    nn.ReLU()
+).to(device)
 
 def extract_feature(image_path):
     # Extract features for images, and do L2 normalize for output
@@ -29,9 +36,11 @@ def extract_feature(image_path):
     with torch.no_grad():
         outputs = model(**inputs)
     last_hidden_state = outputs[0]  
-    feature = last_hidden_state.mean(dim=1).squeeze(0)
-    feature = F.normalize(feature, p=2, dim=0)
-    return feature.cpu().numpy()
+    last_layer = last_hidden_state.mean(dim=1).squeeze(0)
+    feature_768 = last_hidden_state.mean(dim=1).squeeze(0)  # 768-dim
+    feature_512 = baseline_mapper(feature_768)  # 映射到512维
+    feature_512 = F.normalize(feature_512, p=2, dim=0)
+    return feature_512.detach().cpu().numpy()
 
 def group_frames_by_second(frame_paths, fps=60):
     groups = []

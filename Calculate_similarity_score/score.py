@@ -5,6 +5,7 @@ from data_preprocess import data_preprocess
 from scipy.optimize import linear_sum_assignment
 from utils import combine_video_features
 import csv
+from build_model import build_model, transform_feature
 
 def compute_similarity_matrix(ref_seq, comp_seq, sim_metric='euclidean'):
     if isinstance(ref_seq, list):

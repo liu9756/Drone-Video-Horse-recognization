@@ -1,8 +1,8 @@
 Reference Horse,Comparison Horse,Score
-Horse_1_crop,Horse_1_crop,0.6240
-Horse_2_crop,Horse_2_crop,0.6018
-Horse_3_crop,Horse_3_crop,0.5777
-Horse_4_crop,Horse_4_crop,0.6091
-Horse_5_crop,Horse_7_crop,0.6207
-Horse_6_crop,Horse_6_crop,0.6681
-Horse_7_crop,Horse_5_crop,0.5595
+Horse_1_crop,Horse_6_crop,0.6510
+Horse_2_crop,Horse_4_crop,0.6392
+Horse_3_crop,Horse_3_crop,0.6241
+Horse_4_crop,Horse_1_crop,0.6472
+Horse_5_crop,Horse_5_crop,0.6144
+Horse_6_crop,Horse_7_crop,0.6360
+Horse_7_crop,Horse_2_crop,0.6131
