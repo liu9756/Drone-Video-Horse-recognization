@@ -1,0 +1,25 @@
+Processing reference video:
+Processing Horse_1_crop with 19709 images
+Processing Horse_2_crop with 19709 images                                                                                                                                                                      
+Processing Horse_3_crop with 17556 images                                                                                                                                                                      
+Processing Horse_4_crop with 19709 images                                                                                                                                                                      
+Processing Horse_5_crop with 18880 images                                                                                                                                                                      
+Processing Horse_6_crop with 15395 images                                                                                                                                                                      
+Processing Horse_7_crop with 19709 images                                                                                                                                                                      
+Processing comparison video:                                                                                                                                                                                   
+Processing Horse_1_crop with 19713 images
+Processing Horse_2_crop with 19713 images                                                                                                                                                                      
+Processing Horse_3_crop with 18933 images                                                                                                                                                                      
+Processing Horse_4_crop with 10790 images                                                                                                                                                                      
+Processing Horse_5_crop with 19453 images                                                                                                                                                                      
+Processing Horse_6_crop with 19713 images                                                                                                                                                                      
+Processing Horse_7_crop with 19713 images                                                                                                                                                                      
+Bipartite Matching Results:                                                                                                                                                                                    
+  Horse_1_crop  <-->  Horse_1_crop, Score: 0.7075
+  Horse_2_crop  <-->  Horse_2_crop, Score: 0.5721
+  Horse_3_crop  <-->  Horse_3_crop, Score: 0.7014
+  Horse_4_crop  <-->  Horse_4_crop, Score: 0.6546
+  Horse_5_crop  <-->  Horse_5_crop, Score: 0.7196
+  Horse_6_crop  <-->  Horse_6_crop, Score: 0.5662
+  Horse_7_crop  <-->  Horse_7_crop, Score: 0.6699
+Similarity heatmap saved as similarity_heatmap.png
